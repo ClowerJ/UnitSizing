@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit Size Calculator</title>
+</head>
+<body>
+
+<h1>Unit Size Calculation</h1>
+
+<p>Enter the total number of pieces and up to three known unit sizes to calculate the possible combinations:</p>
+
+<!-- Input Fields for Total Pieces and Unit Sizes -->
+<label for="totalPieces">Total Pieces:</label>
+<input type="number" id="totalPieces" placeholder="Enter total pieces" required><br><br>
+
+<label for="unit1">Unit Size 1:</label>
+<input type="number" id="unit1" placeholder="Enter first unit size" required><br><br>
+
+<label for="unit2">Unit Size 2:</label>
+<input type="number" id="unit2" placeholder="Enter second unit size"><br><br>
+
+<label for="unit3">Unit Size 3:</label>
+<input type="number" id="unit3" placeholder="Enter third unit size"><br><br>
+
+<button onclick="calculateUnitSizes()">Calculate</button>
+
+<pre id="result"></pre>
+
+<script>
+    // Optimized function to calculate possible unit combinations
+    function findUnitSizes(totalPieces, unitSizes) {
+        let solutions = [];
+
+        // Filter out zero values from unit sizes
+        const validUnitSizes = unitSizes.filter(size => size > 0);
+
+        // If only one unit size is provided
+        if (validUnitSizes.length === 1) {
+            if (totalPieces % validUnitSizes[0] === 0) {
+                solutions.push([totalPieces / validUnitSizes[0], 0, 0]);
+            }
+        } else {
+            // Loop through valid unit sizes
+            for (let y1 = 0; y1 <= Math.floor(totalPieces / validUnitSizes[0]); y1++) {
+                for (let y2 = 0; y2 <= Math.floor((totalPieces - validUnitSizes[0] * y1) / (validUnitSizes[1] || 1)); y2++) {
+                    let remainingPieces = totalPieces - (validUnitSizes[0] * y1 + validUnitSizes[1] * y2);
+                    
+                    // If a third unit size is provided, check for it
+                    if (validUnitSizes[2] && remainingPieces % validUnitSizes[2] === 0) {
+                        let y3 = remainingPieces / validUnitSizes[2];
+                        solutions.push([y1, y2, y3]);
+                    } else if (!validUnitSizes[2] && remainingPieces === 0) {
+                        solutions.push([y1, y2, 0]);
+                    }
+                }
+            }
+        }
+
+        return solutions;
+    }
+
+    function calculateUnitSizes() {
+        // Get input values
+        let totalPieces = parseInt(document.getElementById("totalPieces").value);
+        let unit1 = parseInt(document.getElementById("unit1").value);
+        let unit2 = parseInt(document.getElementById("unit2").value) || 0; // Default to 0 if empty
+        let unit3 = parseInt(document.getElementById("unit3").value) || 0; // Default to 0 if empty
+
+        // Validate total pieces and unit sizes
+        if (!totalPieces || !unit1) {
+            document.getElementById("result").textContent = "Please enter valid total pieces and at least one unit size.";
+            return;
+        }
+
+        let unitSizes = [unit1, unit2, unit3];
+        
+        // Find possible combinations of units
+        let solutions = findUnitSizes(totalPieces, unitSizes);
+        
+        let resultText = "Possible combinations of units:\n\n";
+        if (solutions.length > 0) {
+            solutions.forEach(([y1, y2, y3]) => {
+                resultText += `${y1} units of ${unitSizes[0]} pieces, ${y2} units of ${unitSizes[1]} pieces, and ${y3} units of ${unitSizes[2]} pieces\n`;
+            });
+        } else {
+            resultText = "No valid combinations found.";
+        }
+
+        // Display the result on the page
+        document.getElementById("result").textContent = resultText;
+    }
+</script>
+
+</body>
+</html>
